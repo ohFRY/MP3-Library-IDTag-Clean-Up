@@ -3,10 +3,12 @@
 import xml.etree.ElementTree as ET
 import urllib.parse
 import os
+import sys
 from pathlib import Path
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, TBPM, TXXX, TKEY, ID3NoHeaderError
 import logging
+import argparse
 
 def setup_logging():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -77,10 +79,17 @@ def log_missing_file(track_name, missing_files_log):
         f.write(f"{track_name}\n")
 
 def main():
+    parser = argparse.ArgumentParser(description='Import BPM and key data from Rekordbox XML to MP3 files')
+    parser.add_argument('xml_file', nargs='?', default='rekordbox.xml', 
+                        help='Path to Rekordbox XML file (default: rekordbox.xml)')
+    parser.add_argument('--missing-log', default='missing_files.txt',
+                        help='Path to log file for missing MP3 files (default: missing_files.txt)')
+    
+    args = parser.parse_args()
     logger = setup_logging()
     
-    xml_file = 'test.xml'  # Use test.xml for validation
-    missing_files_log = 'missing_files.txt'
+    xml_file = args.xml_file
+    missing_files_log = args.missing_log
     
     if not os.path.exists(xml_file):
         logger.error(f"XML file '{xml_file}' not found")

@@ -109,11 +109,19 @@ pip install mutagen
 
 First, export your Rekordbox collection:
 1. In Rekordbox: File → Export Collection in xml format
-2. Save as `test.xml` in the script directory
+2. Save as `rekordbox.xml` in the script directory
 
 ```bash
 python rekordbox_to_mp3.py
 ```
+
+Other usage options:
+  - python rekordbox_to_mp3.py - Uses rekordbox.xml (default)
+  - python rekordbox_to_mp3.py test.xml - Uses test.xml
+  - python rekordbox_to_mp3.py /path/to/collection.xml - Uses custom
+   path
+  - python rekordbox_to_mp3.py --help - Shows help
+
 
 ### 2. Clean MP3 Metadata
 
