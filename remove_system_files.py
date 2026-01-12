@@ -3,6 +3,8 @@
 import os
 import logging
 import fnmatch
+import argparse
+import urllib.parse
 from pathlib import Path
 
 def setup_logging():
@@ -91,8 +93,23 @@ def remove_file_or_directory(path):
 
 def main():
     logger = setup_logging()
-    
-    current_directory = os.getcwd()
+
+    parser = argparse.ArgumentParser(description='Remove system files from a directory (defaults to current directory)')
+    parser.add_argument('directory', nargs='?', default=os.getcwd(), help='Directory to scan (can be a Rekordbox-style file URL)')
+    args = parser.parse_args()
+
+    # Normalize potential Rekordbox-style or file:// paths on Windows
+    directory = args.directory
+    if directory.startswith('file://localhost'):
+        directory = directory[len('file://localhost'):]
+    elif directory.startswith('file://'):
+        directory = directory[len('file://'):]
+
+    directory = urllib.parse.unquote(directory)
+    if os.name == 'nt' and len(directory) >= 3 and directory[0] == '/' and directory[2] == ':':
+        directory = directory.lstrip('/')
+
+    current_directory = os.path.normpath(directory)
     logger.info(f"Starting system file cleanup in: {current_directory}")
     
     patterns = get_system_file_patterns()

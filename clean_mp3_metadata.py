@@ -2,6 +2,8 @@
 
 import os
 import logging
+import argparse
+import urllib.parse
 from pathlib import Path
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, ID3NoHeaderError
@@ -87,8 +89,23 @@ def clean_mp3_metadata(file_path, tags_to_keep):
 
 def main():
     logger = setup_logging()
-    
-    current_directory = os.getcwd()
+
+    parser = argparse.ArgumentParser(description='Clean MP3 metadata in a directory (defaults to current directory)')
+    parser.add_argument('directory', nargs='?', default=os.getcwd(), help='Directory to scan (can be a Rekordbox-style file URL)')
+    args = parser.parse_args()
+
+    # Normalize potential Rekordbox-style or file:// paths on Windows
+    directory = args.directory
+    if directory.startswith('file://localhost'):
+        directory = directory[len('file://localhost'):]
+    elif directory.startswith('file://'):
+        directory = directory[len('file://'):]
+
+    directory = urllib.parse.unquote(directory)
+    if os.name == 'nt' and len(directory) >= 3 and directory[0] == '/' and directory[2] == ':':
+        directory = directory.lstrip('/')
+
+    current_directory = os.path.normpath(directory)
     logger.info(f"Starting metadata cleanup in: {current_directory}")
     
     tags_to_keep = get_tags_to_keep()
