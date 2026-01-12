@@ -15,10 +15,21 @@ def setup_logging():
     return logging.getLogger(__name__)
 
 def parse_rekordbox_location(location):
+    # Remove common file URL prefixes
     if location.startswith('file://localhost'):
-        location = location[16:]
-    
+        location = location[len('file://localhost'):]
+    elif location.startswith('file://'):
+        location = location[len('file://'):]
+
     decoded_path = urllib.parse.unquote(location)
+
+    # On Windows URLs Rekordbox sometimes produces paths like '/E:/path/to/file.mp3'
+    # Strip a leading slash before a drive letter and normalize separators.
+    if os.name == 'nt':
+        if len(decoded_path) >= 3 and decoded_path[0] == '/' and decoded_path[2] == ':':
+            decoded_path = decoded_path.lstrip('/')
+        decoded_path = decoded_path.replace('/', os.sep)
+
     return decoded_path
 
 def extract_track_data(xml_file):
